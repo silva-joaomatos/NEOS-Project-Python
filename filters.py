@@ -38,6 +38,7 @@ class AttributeFilter:
     Concrete subclasses can override the `get` classmethod to provide custom
     behavior to fetch a desired attribute from the given `CloseApproach`.
     """
+    
     def __init__(self, op, value):
         """Construct a new `AttributeFilter` from an binary predicate and a reference value.
 
@@ -69,22 +70,95 @@ class AttributeFilter:
         raise UnsupportedCriterionError
 
     def __repr__(self):
+        """Repr method used to compare filter attribute."""
         return f"{self.__class__.__name__}(op=operator.{self.op.__name__}, value={self.value})"
+   
+class DateFilter(AttributeFilter):
+    """Subclass of AttributeFilter to filter CloseApproach objects by date."""
 
+    @classmethod
+    def get(cls, approach):
+        """Return approach.time converted to datetime.datetime object for the date filter.
+        
+        Args:
+            approach (CloseApproach): A CloseApproach object.
+        Returns:
+            [datetime.datetime]: Converted time to datetime object.
+            
+        """
+        return approach.time.date()
 
-def create_filters(
-        date=None, start_date=None, end_date=None,
-        distance_min=None, distance_max=None,
-        velocity_min=None, velocity_max=None,
-        diameter_min=None, diameter_max=None,
-        hazardous=None
-):
+class DistanceFilter(AttributeFilter):
+    """Subclass of AttributeFilter to filter approach objects by distance."""
+
+    @classmethod
+    def get(cls, approach):
+        """Return distance of the CloseApproach objectfor the distance filter.
+        
+        Args:
+            approach (CloseApproach): A CloseApproach object.
+        Returns:
+            [float]: Returns the distance of a CloseApproach.
+            
+        """
+        return approach.distance
+    
+class VelocityFilter(AttributeFilter):
+    """Subclass of AttributeFilter to filter approach objects by velocity."""
+
+    @classmethod
+    def get(cls, approach):
+        """Return approach.velocity for the velocity filter.
+        
+        Args:
+            approach (CloseApproach): A CloseApproach object.
+        Returns:
+            [float]: Returns the velocity of a CloseApproach.
+            
+        """
+        return approach.velocity
+    
+class DiameterFilter(AttributeFilter):
+    """Subclass of AttributeFilter to filter approach objects by diameter."""
+
+    @classmethod
+    def get(cls, approach):
+        """Return the diameter of the neo assigned to the CloseApproach object for the diameter filter.
+        
+        Args:
+            approach (CloseApproach): A CloseApproach object.
+        Returns:
+            [float]: Returns the diameter of a NearEarthObject object.
+            
+        """
+        return approach.neo.diameter
+
+class HazardousFilter(AttributeFilter):
+    """Subclass to filter CloseApproach objects by if it's hazardous."""
+
+    @classmethod
+    def get(cls, approach):
+        """Return the hazardous attribute of the neo assigned to the CloseApproach object for the diameter filter.
+        
+        Args:
+            approach (CloseApproach): A CloseApproach object.
+        Returns:
+            [float]: Returns the hazardous attribute of a NearEarthObject object.
+            
+        """
+        return approach.neo.hazardous
+
+def create_filters(date=None, start_date=None, end_date=None,
+                   distance_min=None, distance_max=None,
+                   velocity_min=None, velocity_max=None,
+                   diameter_min=None, diameter_max=None,
+                   hazardous=None):
     """Create a collection of filters from user-specified criteria.
 
     Each of these arguments is provided by the main module with a value from the
     user's options at the command line. Each one corresponds to a different type
     of filter. For example, the `--date` option corresponds to the `date`
-    argument, and represents a filter that selects close approaches that occurred
+    argument, and represents a filter that selects close approaches that occured
     on exactly that given date. Similarly, the `--min-distance` option
     corresponds to the `distance_min` argument, and represents a filter that
     selects close approaches whose nominal approach distance is at least that
@@ -143,7 +217,6 @@ def limit(iterator, n=None):
     :param n: The maximum number of values to produce.
     :yield: The first (at most) `n` values from the iterator.
     """
-    #Produce at most `n` values from the given iterator.
     if n == 0 or n is None:
         return iterator
     return [x for i, x in enumerate(iterator) if i<n]
